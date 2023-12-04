@@ -62,4 +62,23 @@ export const ApiService = {
             url: `/bc-api/${resource}`,
         });
     },
+    storeSettings(data) {
+        return axios({
+            method: 'post',
+            url: `/settings`,
+            data,
+        });
+    },
+    getSettings() {
+        return axios({
+            method: 'get',
+            url: `/settings`,
+        });
+    },
+    getScripts() {
+        return axios({
+            method: 'get',
+            url: '/bc-api/v3/content/scripts',
+        });
+    }
 };

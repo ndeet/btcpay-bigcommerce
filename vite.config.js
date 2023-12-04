@@ -10,4 +10,11 @@ export default defineConfig({
         }),
         react(),
     ],
+    server : {
+        hmr:{
+            host: process.env.DDEV_HOSTNAME,
+            protocol : 'wss',
+            clientPort: 5173
+        },
+    },
 });

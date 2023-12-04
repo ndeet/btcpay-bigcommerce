@@ -4,6 +4,7 @@ import { ApiService } from '@/Services';
 
 import { Head } from '@inertiajs/react';
 import React from 'react';
+import SettingsForm from "@/Forms/SettingsForm";
 
 export default class Home extends React.Component {
     constructor(props) {
@@ -14,12 +15,16 @@ export default class Home extends React.Component {
             isStoreInfoLoading: true,
             catalogSummary: {},
             storeInfo: {},
+            settings: {}
         };
     }
 
     componentDidMount() {
-        ApiService.getResourceEntry('v2/store').then(this.handleStoreInfoResponse.bind(this));
-        ApiService.getResourceEntry('v3/catalog/summary').then(this.handleCatalogSummaryResponse.bind(this));
+        //ApiService.getResourceEntry('v2/store').then(this.handleStoreInfoResponse.bind(this));
+        //ApiService.getResourceEntry('v3/catalog/summary').then(this.handleCatalogSummaryResponse.bind(this));
+        ApiService.getSettings().then(this.handleGetStoreSettingsResponse.bind(this));
+        //ApiService.storeSettings({"test": "value"}).then(this.handleStoreSettingsResponse.bind(this));
+        //ApiService.getScripts().then(this.handleGetScriptsResponse.bind(this));
     }
 
     handleStoreInfoResponse(response) {
@@ -34,6 +39,29 @@ export default class Home extends React.Component {
             isCatalogSummaryLoading: false,
             catalogSummary: response.data.data,
         });
+    }
+
+    handleGetStoreSettingsResponse(response) {
+        console.log(response.data);
+
+        this.setState({
+            settings: response.data
+        });
+    }
+
+    handleStoreSettingsResponse(response) {
+console.log(response.data);
+    }
+
+
+    handleSuccess = (response) => {
+        console.warn(response.data);
+//        window.location.reload();
+    };
+
+    handleGetScriptsResponse = (response) => {
+        console.log('loading scripts:');
+        console.log(response.data);
     }
 
     render() {
@@ -59,6 +87,9 @@ export default class Home extends React.Component {
                 <Head title="Home" />
                 <Navigation />
                 <div className="container mx-auto p-5">
+                    <SettingsForm initialData={this.state.settings} />
+                </div>
+                <div className="container mx-auto p-5">
                     <div className="grid grid-cols-4 gap-4">
                         <div className="content col-span-3 grid-col-3 rounded bg-gray-100 shadow-lg p-4">
                             <h2 className="text-xl font-bold mb-6">This is the Home Page.</h2>
@@ -80,7 +111,7 @@ export default class Home extends React.Component {
                                                             new Intl.NumberFormat(undefined, { style: 'currency', currency: this.state.storeInfo.currency }).format(this.state.catalogSummary[summaryItem.index])
                                                             :
                                                             this.state.catalogSummary[summaryItem.index]
-                                                
+
                                                     }
                                                 </span>
                                         }

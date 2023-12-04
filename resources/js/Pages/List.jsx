@@ -70,7 +70,7 @@ export default class List extends React.Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.loadOrders();
     }
 

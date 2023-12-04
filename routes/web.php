@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,23 +27,33 @@ Route::get('/list', function () {
     return Inertia::render('List');
 });
 
+Route::get('error', 'MainController@error');
+
 Route::group(['prefix' => 'auth'], function () {
     Route::get('install', [MainController::class, 'install']);
 
     Route::get('load', [MainController::class, 'load']);
 
-    Route::get('uninstall', function () {
-        echo 'uninstall';
-        return app()->version();
-    });
+    Route::get('uninstall', [MainController::class, 'uninstall']);
 
     Route::get('remove-user', function () {
         echo 'remove-user';
         return app()->version();
     });
 });
+/*
+Route::post('create-invoice', function () {
+    return [
+        'invoiceUrl' => 'https://example.com/invoice.pdf',
+    ];
+})->middleware('disable_cors');
+*/
+Route::resource('settings', SettingsController::class)
+  ->only(['index','show', 'store', 'update']);
 
-Route::any('/bc-api/{endpoint}', [MainController::class, 'proxyBigCommerceAPIRequest'])
+Route::get('install-script', [SettingsController::class, 'installScript'])->name('install-script');
+
+Route::any('/bc-api/{endpoint}', [MainController::class, 'bcApiCall'])
     ->where('endpoint', 'v2\/.*|v3\/.*');
 
 require __DIR__.'/auth.php';
