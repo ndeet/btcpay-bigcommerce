@@ -39,6 +39,11 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
+            'btcpayData' => [
+                'isAppContext' => session()->get('store_hash') ? true : false,
+                //'isAppContext' => true, // override store context check
+                'store_hash' => session()->get('store_hash'),
+            ],
         ]);
     }
 }
