@@ -163,7 +163,7 @@ class BtcpayController extends Controller
                 break;
             case 'InvoiceProcessing': // The invoice is paid in full.
                 $bcService->updateOrderStatus($transaction->order_id, OrderStates::AWAITING_PAYMENT);
-                if ($postData->overPaid) {
+                if (isset($postData->overPaid) && $postData->overPaid) {
                     #$order->add_order_note(__('Invoice payment received fully with overpayment, waiting for settlement.', 'btcpay-greenfield-for-woocommerce'));
                 } else {
                     #$order->add_order_note(__('Invoice payment received fully, waiting for settlement.', 'btcpay-greenfield-for-woocommerce'));
@@ -188,7 +188,7 @@ class BtcpayController extends Controller
                 break;
             case 'InvoiceSettled':
 
-                if ($postData->overPaid) {
+                if (isset($postData->overPaid) && $postData->overPaid) {
                     $bcService->updateOrderStatus($transaction->order_id, OrderStates::MANUAL_VERIFICATION_REQUIRED);
                     #$order->add_order_note(__('Invoice payment settled but was overpaid.', 'btcpay-greenfield-for-woocommerce'));
                 } else {
