@@ -85,9 +85,9 @@ class MainController extends Controller
             $errorMessage = "An error occurred.";
 
             if ($e->hasResponse()) {
-                if ($statusCode != 500) {
+                //if ($statusCode != 500) {
                     $errorMessage = $e->getResponse();
-                }
+                //}
             }
 
             // If the merchant installed the app via an external link, redirect back to the
@@ -95,6 +95,7 @@ class MainController extends Controller
             if ($request->has('external_install')) {
                 return Redirect::to('https://login.bigcommerce.com/app/' . $this->bcService->getAppClientId() . '/install/failed');
             } else {
+                $request->session()->put('error_message', $errorMessage);
                 return redirect()->action([MainController::class, 'error'], ['error_message' => $errorMessage]);
             }
         }
