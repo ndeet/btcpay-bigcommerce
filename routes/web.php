@@ -27,7 +27,7 @@ Route::get('/list', function () {
     return Inertia::render('List');
 });
 
-Route::get('error', 'MainController@error');
+Route::get('error', [MainController::class, 'error']);
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('install', [MainController::class, 'install']);
