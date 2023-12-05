@@ -86,7 +86,7 @@ class MainController extends Controller
 
             if ($e->hasResponse()) {
                 //if ($statusCode != 500) {
-                    $errorMessage = $e->getResponse();
+                    $errorMessage = $e->getMessage();
                 //}
             }
 
