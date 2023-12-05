@@ -1,60 +1,3 @@
-/*
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        // Check if new nodes are added
-        if (mutation.addedNodes.length) {
-            // Try to find the form element
-            const checkoutForm = document.querySelector('.checkout-form');
-
-            if (checkoutForm && !document.getElementById('btcpay-button')) {
-                // Create and inject the "Pay with BTCPay" button
-                const btcpayButton = document.createElement('button');
-                btcpayButton.id = 'btcpay-button';
-                btcpayButton.innerText = 'Pay with BTCPay';
-                btcpayButton.className = 'button button--action button--large button--slab optimizedCheckout-buttonPrimary';
-
-                // Find the form-actions div to insert the button before "Place Order"
-                const formActions = checkoutForm.querySelector('.form-actions');
-                formActions.insertBefore(btcpayButton, formActions.firstChild);
-
-                document.getElementById('btcpay-button').addEventListener('click', function(e) {
-
-                    e.preventDefault();
-
-                    getCart().then(cart => {
-                        fetch('https://bigcommerce-laravel.ddev.site/api/create-invoice', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                storeId: storeId,
-                                cartId: cart.id,
-                                currency: cart.currency,
-                                total: cart.amount,
-                                email: cart.customerEmail
-                            })
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                console.warn('Payment initiation successful:', data);
-                                if (data.checkoutLink) {
-                                    window.location.href = data.checkoutLink;
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Payment initiation failed:', error);
-                            });
-                    }).catch(error => {
-                        console.error('Failed to get cart:', error);
-                    });
-
-                });
-            }
-        }
-    });
-});
- */
 // Function to initialize the observer
 function observePaymentOptions() {
     // Observer callback function
@@ -75,7 +18,7 @@ function observePaymentOptions() {
                                     event.preventDefault(); // Prevent default form submission
 
                                     getCart().then(cart => {
-                                        fetch('https://bigcommerce-laravel.ddev.site/api/create-invoice', {
+                                        fetch('https://bigcommerce.btcpay.tech/api/create-invoice', {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/json'
@@ -164,7 +107,7 @@ const getBCId = () => {
 }
 
 const storeId = getBCId();
-console.log(storeId);
+//console.log(storeId);
 // Configuration for the observer
 //const config = { childList: true, subtree: true };
 
