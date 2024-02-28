@@ -11,6 +11,7 @@ enum OrderStates: int
     case DECLINED = 6;
     case AWAITING_PAYMENT = 7;
     case COMPLETED = 10;
+    case AWAITING_FULFILLMENT = 11;
     case MANUAL_VERIFICATION_REQUIRED = 12;
     case DISPUTED = 13;
 }

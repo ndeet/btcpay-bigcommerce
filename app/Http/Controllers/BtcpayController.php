@@ -72,6 +72,8 @@ class BtcpayController extends Controller
                 'invoice_status' => $invoice->getStatus(),
             ]);
 
+            // todo: Update the order with the invoice id + maybe link to invoice? staff note or metadata field
+
             return $invoice->getData();
 
         } catch (\Throwable $e) {
@@ -192,7 +194,7 @@ class BtcpayController extends Controller
                     $bcService->updateOrderStatus($transaction->order_id, OrderStates::MANUAL_VERIFICATION_REQUIRED);
                     #$order->add_order_note(__('Invoice payment settled but was overpaid.', 'btcpay-greenfield-for-woocommerce'));
                 } else {
-                    $bcService->updateOrderStatus($transaction->order_id, OrderStates::COMPLETED);
+                    $bcService->updateOrderStatus($transaction->order_id, OrderStates::AWAITING_FULFILLMENT);
                     #$order->add_order_note(__('Invoice payment settled.', 'btcpay-greenfield-for-woocommerce'));
                 }
 
