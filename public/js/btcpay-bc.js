@@ -9,7 +9,7 @@ function observePaymentOptions() {
                 if (checkoutForm) {
                     // Iterate over radio buttons to check their state
                     checkoutForm.querySelectorAll('input[name="paymentProviderRadio"]').forEach(radio => {
-                        if (radio.nextElementSibling && radio.nextElementSibling.innerText.includes('Bitcoin / Lightning Network') && radio.checked) {
+                        if (radio.nextElementSibling && radio.nextElementSibling.innerText.includes('Bitcoin') && radio.checked) {
                             // Bitcoin option selected
                             const paymentButton = document.getElementById('checkout-payment-continue');
                             if (paymentButton) {
@@ -17,14 +17,16 @@ function observePaymentOptions() {
                                 paymentButton.onclick = (event) => {
                                     event.preventDefault(); // Prevent default form submission
 
+                                    const bcData = getBCData();
+
                                     getCart().then(cart => {
-                                        fetch('https://bigcommerce.btcpay.tech/api/create-invoice', {
+                                        fetch(bcData.proxyService + '/api/create-invoice', {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/json'
                                             },
                                             body: JSON.stringify({
-                                                storeId: storeId,
+                                                storeId: bcData.storeId,
                                                 cartId: cart.id,
                                                 currency: cart.currency,
                                                 total: cart.amount,
@@ -70,10 +72,7 @@ function observePaymentOptions() {
     observer.observe(document, config);
 }
 
-// Start observing as soon as the script is loaded
-observePaymentOptions();
-
-
+// Function to get the cart data
 const getCart = () => {
     // Return the fetch promise
     return fetch('/api/storefront/carts', {
@@ -99,17 +98,96 @@ const getCart = () => {
         });
 }
 
-const getBCId = () => {
+const getBCData = () => {
     const thisScript = document.currentScript;
     const script_url = thisScript.src;
-    const id = script_url.split('=')[1];
-    return id;
+    const url = new URL(script_url);
+    const storeId = url.searchParams.get('bcid');
+    return {
+        storeId: storeId,
+        proxyService: 'https://' + url.hostname
+    }
 }
 
-const storeId = getBCId();
+const getBTCPayData = () => {
+    // todo: get data via proxy service, or find a another way.
+    return {
+        btcpayUrl: 'https://testnet.demo.btcpay.tech'
+    }
+}
+
 //console.log(storeId);
 // Configuration for the observer
 //const config = { childList: true, subtree: true };
 
 // Start observing the body element
 //observer.observe(document.body, config);
+
+// Show BTCPay modal.
+const showBTCPayModal = function(data) {
+    console.log('Triggered showBTCPayModal()');
+
+    if (data.invoiceId == undefined) {
+        //submitError(BTCPayWP.textModalClosed);
+        console.error('No invoice id provided, aborting.');
+    }
+    const btcpayData = getBTCPayData();
+    window.btcpay.setApiUrlPrefix(btcpayData.btcpayUrl);
+    window.btcpay.showInvoice(data.invoiceId);
+
+    let invoice_paid = false;
+    window.btcpay.onModalReceiveMessage(function (event) {
+        if (isObject(event.data)) {
+            //console.log('BTCPay modal event: invoiceId: ' + event.data.invoiceId);
+            //console.log('BTCPay modal event: status: ' + event.data.status);
+            if (event.data.status) {
+                switch (event.data.status) {
+                    case 'complete':
+                    case 'paid':
+                        invoice_paid = true;
+                        window.location = data.orderCompleteLink;
+                        break;
+                    case 'expired':
+                        window.btcpay.hideFrame();
+                        // submitError(BTCPayWP.textInvoiceExpired);
+                        console.error('Invoice expired.')
+                        break;
+                }
+            }
+        } else { // handle event.data "loaded" "closed"
+            if (event.data === 'close') {
+                if (invoice_paid === true) {
+                    window.location = data.orderCompleteLink;
+                }
+                // submitError(BTCPayWP.textModalClosed);
+                console.error('Modal closed.')
+            }
+        }
+    });
+    const isObject = obj => {
+        return Object.prototype.toString.call(obj) === '[object Object]'
+    }
+};
+
+const loadModalScript = () => {
+    const btcpay = getBTCPayData();
+    const script = document.createElement('script');
+    script.src = btcpay.btcpayUrl + '/modal/btcpay.js';
+    document.head.appendChild(script);
+
+    // Optional: Handle loading and error events
+    script.onload = function() {
+        console.log('External modal script loaded successfully.');
+    };
+
+    script.onerror = function() {
+        console.error('Error loading the external modal script.');
+    };
+
+}
+
+
+// Entrypoint.
+loadModalScript();
+observePaymentOptions();
+
