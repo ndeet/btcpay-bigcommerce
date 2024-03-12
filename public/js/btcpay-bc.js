@@ -1,3 +1,5 @@
+// POC code, messy and not production ready.
+
 // Function to initialize the observer
 function observePaymentOptions() {
     // Observer callback function
@@ -12,6 +14,7 @@ function observePaymentOptions() {
                         if (radio.nextElementSibling && radio.nextElementSibling.innerText.includes('Bitcoin') && radio.checked) {
                             // Bitcoin option selected
                             const paymentButton = document.getElementById('checkout-payment-continue');
+                            const checkoutForm = document.querySelector('.checkout-form');
                             if (paymentButton) {
                                 paymentButton.textContent = 'Pay with Bitcoin';
                                 paymentButton.onclick = (event) => {
@@ -34,9 +37,9 @@ function observePaymentOptions() {
                                             .then(response => response.json())
                                             .then(data => {
                                                 console.warn('Payment initiation successful:', data);
-                                                if (data.checkoutLink) {
+                                                if (data.id) {
                                                     // window.location.href = data.checkoutLink;
-                                                    showBTCPayModal(data);
+                                                    showBTCPayModal(data, checkoutForm);
                                                 }
                                             })
                                             .catch(error => {
@@ -47,7 +50,7 @@ function observePaymentOptions() {
                                     });
                                 };
                             }
-                        } else if (radio.nextElementSibling && !radio.nextElementSibling.innerText.includes('Bitcoin / Lightning Network') && radio.checked) {
+                        } else if (radio.nextElementSibling && !radio.nextElementSibling.innerText.includes('Bitcoin') && radio.checked) {
                             // Non-Bitcoin option selected
                             const paymentButton = document.getElementById('checkout-payment-continue');
                             if (paymentButton) {
@@ -109,7 +112,7 @@ const getBCData = () => {
 }
 
 // Need to initialize here otherwise currentScript ref lost.
-const bcData = getBcData();
+const bcData = getBCData();
 
 const getBTCPayData = () => {
     // todo: get data via proxy service, or find a another way,
@@ -127,28 +130,29 @@ const getBTCPayData = () => {
 //observer.observe(document.body, config);
 
 // Show BTCPay modal.
-const showBTCPayModal = function(data) {
+const showBTCPayModal = function(data, checkoutForm) {
     console.log('Triggered showBTCPayModal()');
 
-    if (data.invoiceId == undefined) {
+    if (data.id == undefined) {
         //submitError(BTCPayWP.textModalClosed);
         console.error('No invoice id provided, aborting.');
     }
     const btcpayData = getBTCPayData();
     window.btcpay.setApiUrlPrefix(btcpayData.btcpayUrl);
-    window.btcpay.showInvoice(data.invoiceId);
+    window.btcpay.showInvoice(data.id);
 
     let invoice_paid = false;
     window.btcpay.onModalReceiveMessage(function (event) {
         if (isObject(event.data)) {
-            //console.log('BTCPay modal event: invoiceId: ' + event.data.invoiceId);
+            //console.log('BTCPay modal event: invoiceId: ' + event.data.id);
             //console.log('BTCPay modal event: status: ' + event.data.status);
             if (event.data.status) {
                 switch (event.data.status) {
                     case 'complete':
                     case 'paid':
                         invoice_paid = true;
-                        window.location = data.orderCompleteLink;
+                        checkoutForm.submit();
+                        // window.location = data.orderCompleteLink;
                         break;
                     case 'expired':
                         window.btcpay.hideFrame();
@@ -160,7 +164,8 @@ const showBTCPayModal = function(data) {
         } else { // handle event.data "loaded" "closed"
             if (event.data === 'close') {
                 if (invoice_paid === true) {
-                    window.location = data.orderCompleteLink;
+                    checkoutForm.submit();
+                    //window.location = data.orderCompleteLink;
                 }
                 // submitError(BTCPayWP.textModalClosed);
                 console.error('Modal closed.')
