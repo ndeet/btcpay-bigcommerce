@@ -17,8 +17,6 @@ function observePaymentOptions() {
                                 paymentButton.onclick = (event) => {
                                     event.preventDefault(); // Prevent default form submission
 
-                                    const bcData = getBCData();
-
                                     getCart().then(cart => {
                                         fetch(bcData.proxyService + '/api/create-invoice', {
                                             method: 'POST',
@@ -37,7 +35,8 @@ function observePaymentOptions() {
                                             .then(data => {
                                                 console.warn('Payment initiation successful:', data);
                                                 if (data.checkoutLink) {
-                                                    window.location.href = data.checkoutLink;
+                                                    // window.location.href = data.checkoutLink;
+                                                    showBTCPayModal(data);
                                                 }
                                             })
                                             .catch(error => {
@@ -109,8 +108,12 @@ const getBCData = () => {
     }
 }
 
+// Need to initialize here otherwise currentScript ref lost.
+const bcData = getBcData();
+
 const getBTCPayData = () => {
-    // todo: get data via proxy service, or find a another way.
+    // todo: get data via proxy service, or find a another way,
+    // e.g. adding script via API like the btcpay-bc.js
     return {
         btcpayUrl: 'https://testnet.demo.btcpay.tech'
     }
