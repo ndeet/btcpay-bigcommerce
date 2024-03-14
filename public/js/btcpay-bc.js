@@ -133,6 +133,8 @@ const getBTCPayData = () => {
 const showBTCPayModal = function(data, checkoutForm) {
     console.log('Triggered showBTCPayModal()');
 
+    const orderConfirmationPath = '/checkout/order-confirmation';
+
     if (data.id == undefined) {
         //submitError(BTCPayWP.textModalClosed);
         console.error('No invoice id provided, aborting.');
@@ -151,8 +153,7 @@ const showBTCPayModal = function(data, checkoutForm) {
                     case 'complete':
                     case 'paid':
                         invoice_paid = true;
-                        checkoutForm.submit();
-                        // window.location = data.orderCompleteLink;
+                        window.location = orderConfirmationPath;
                         break;
                     case 'expired':
                         window.btcpay.hideFrame();
@@ -164,11 +165,10 @@ const showBTCPayModal = function(data, checkoutForm) {
         } else { // handle event.data "loaded" "closed"
             if (event.data === 'close') {
                 if (invoice_paid === true) {
-                    checkoutForm.submit();
-                    //window.location = data.orderCompleteLink;
+                   window.location = orderConfirmationPath;
                 }
                 // submitError(BTCPayWP.textModalClosed);
-                console.error('Modal closed.')
+                console.log('Modal closed.')
             }
         }
     });
