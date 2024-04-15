@@ -20,14 +20,16 @@ class BtcPayService
         }
     }
 
-    // create webhook on btcpay server
+    // create webhook on BTCPay Server
     public function ensureWebhook(): void
     {
         if (empty($this->setting->webhook_id)) {
             $this->createWebhook();
         } else {
-            $webhook = $this->getWebhook($this->setting->webhook_id);
-            if (!$webhook) {
+            try {
+                // check if stored webhook id exists on BTCPay Server, if not create it
+                $this->getWebhook($this->setting->webhook_id);
+            } catch (\Throwable $e) {
                 $this->createWebhook();
             }
         }
