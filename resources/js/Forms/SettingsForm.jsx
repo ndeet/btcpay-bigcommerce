@@ -34,6 +34,12 @@ export default function SettingsForm({ initialData }) {
 
     const renderInputField = (name, placeholder) => (
         <>
+            <label
+                htmlFor={name}
+                className="block text-sm font-medium text-gray-700"
+            >
+                {placeholder}
+            </label>
             <input
                 type="text"
                 value={data[name]}

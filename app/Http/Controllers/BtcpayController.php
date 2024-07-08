@@ -41,7 +41,7 @@ class BtcpayController extends Controller
 
         // todo: validate input data
 
-        // todo: create order on BigCommerce
+        // Create order on BigCommerce
         $bcService = new BigCommerceService($this->settings->store_hash);
         $orderId = $bcService->createOrderFromCart($request->input('cartId'));
         if (!$orderId) {
@@ -72,9 +72,11 @@ class BtcpayController extends Controller
                 'invoice_status' => $invoice->getStatus(),
             ]);
 
+            // Update order status to awaiting payment?
+
             // todo: Update the order with the invoice id + maybe link to invoice? staff note or metadata field
 
-            return $invoice->getData();
+            return $invoice->getData() + ['orderId' => $orderId];
 
         } catch (\Throwable $e) {
             error_log($e->getMessage());
