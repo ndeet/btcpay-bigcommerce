@@ -1,5 +1,7 @@
 // POC code, messy and not production ready.
 
+
+/* DISABLED as it causes Firefox and Safari to crash.
 // Function to initialize the observer
 function observePaymentOptions() {
     // Observer callback function
@@ -73,6 +75,95 @@ function observePaymentOptions() {
     // Start observing the entire document for changes
     observer.observe(document, config);
 }
+END DISABLED */
+
+/**
+const observePaymentOptions = () => {
+    const checkoutForm = document.querySelector('.checkout-form');
+    if (!checkoutForm) return;
+
+    const paymentButton = document.getElementById('checkout-payment-continue');
+    if (paymentButton) {
+        const bitcoinOptionSelected = Array.from(checkoutForm.querySelectorAll('input[name="paymentProviderRadio"]')).some(radio => {
+            return radio.nextElementSibling && radio.nextElementSibling.innerText.includes('Bitcoin') && radio.checked;
+        });
+
+        if (bitcoinOptionSelected) {
+            paymentButton.textContent = 'Pay with Bitcoin';
+            paymentButton.onclick = handleBitcoinPayment;
+        } else {
+            paymentButton.textContent = 'Place Order';
+            paymentButton.onclick = null; // Reset to default behavior
+        }
+    }
+}
+*/
+
+const observePaymentOptions = () => {
+    const checkoutForm = document.querySelector('.checkout-form');
+    if (!checkoutForm) return;
+
+    const paymentButton = document.getElementById('checkout-payment-continue');
+    if (!paymentButton) return;
+
+    const updatePaymentButton = () => {
+        const bitcoinOptionSelected = Array.from(checkoutForm.querySelectorAll('input[name="paymentProviderRadio"]')).some(radio => {
+            return radio.nextElementSibling && radio.nextElementSibling.innerText.includes('Bitcoin') && radio.checked;
+        });
+
+        if (bitcoinOptionSelected) {
+            paymentButton.textContent = 'Pay with Bitcoin';
+            paymentButton.onclick = handleBitcoinPayment;
+        } else {
+            paymentButton.textContent = 'Place Order';
+            paymentButton.onclick = null; // Reset to default behavior
+        }
+    };
+
+    const paymentOptions = checkoutForm.querySelectorAll('input[name="paymentProviderRadio"]');
+    paymentOptions.forEach(radio => {
+        radio.addEventListener('change', updatePaymentButton);
+    });
+
+    // Initial call to set the correct button state
+    updatePaymentButton();
+}
+
+const handleBitcoinPayment = (event) => {
+    event.preventDefault(); // Prevent default form submission
+    const checkoutForm = document.querySelector('.checkout-form');
+    event.target.textContent = 'Processing ...';
+    clearInterval(pollInterval);
+
+    getCart()
+        .then(cart => {
+            return fetch(bcData.proxyService + '/api/create-invoice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    storeId: bcData.storeId,
+                    cartId: cart.id,
+                    currency: cart.currency,
+                    total: cart.amount,
+                    email: cart.customerEmail
+                })
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.warn('Payment initiation successful:', data);
+            if (data.id) {
+                // window.location.href = data.checkoutLink;
+                showBTCPayModal(data, checkoutForm);
+            }
+        })
+        .catch(error => {
+            console.error('Payment initiation failed:', error);
+        });
+}
+
 
 // Function to get the cart data
 const getCart = () => {
@@ -228,7 +319,7 @@ const showOrderConfirmation = (orderId, invoiceId) => {
         // Append overlay to the body
         document.body.appendChild(overlay);
         window.btcpay.hideFrame();
-    }, 3000);
+    }, 2000);
 }
 
 const loadModalScript = () => {
@@ -250,4 +341,5 @@ const loadModalScript = () => {
 
 // Entrypoint.
 loadModalScript();
-observePaymentOptions();
+//observePaymentOptions();
+const pollInterval = setInterval(observePaymentOptions, 300);
